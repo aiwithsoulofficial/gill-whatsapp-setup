@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gill Group - WhatsApp to OneDrive setup</title><meta name="robots" content="noindex">
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; max-width: 860px; margin: 30px auto; padding: 0 18px; color: #1d2433; background: #f6f7f9; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  .sub { color: #5a6475; margin-top: 0; }
+  .step { background: #fff; border: 1px solid #dde1e7; border-radius: 10px; padding: 16px 18px; margin: 16px 0; }
+  .step h2 { font-size: 17px; margin: 0 0 6px; }
+  .step p { margin: 6px 0; line-height: 1.45; }
+  pre { background: #10151f; color: #d7e2f0; padding: 12px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; font-size: 12.5px; margin: 10px 0 6px; }
+  button { background: #1f6feb; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+  button.done { background: #2da44e; }
+  .note { font-size: 13px; color: #5a6475; }
+  textarea { width: 100%; min-height: 180px; font-family: Menlo, monospace; font-size: 12px; border-radius: 8px; border: 1px solid #c8ced8; padding: 10px; box-sizing: border-box; }
+  .msg { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 8px 10px; margin: 10px 0; }
+  .msg.kelly { border-left: 5px solid #8250df; } .msg.client { border-left: 5px solid #1f6feb; }
+  .head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #5a6475; }
+  .msg pre { max-height: 380px; overflow: auto; }
+</style>
+</head>
+<body>
+<h1>Gill Group - WhatsApp job groups into OneDrive</h1>
+<p class="sub">For each step: click <b>Copy</b>, click into <b>Terminal</b>, press <b>Cmd + V</b>, then <b>Enter</b>. Every step sends its result to Kelly by itself, and Kelly's replies show up in the chat box below.</p>
+<div class="step" style="border:2px solid #2da44e"><h2>Step 1. Set it up (one paste)</h2><p>Installs the newest version, makes your list of WhatsApp groups, turns on saving every 15 minutes and opens the list. Nothing is saved yet.</p><pre id="c1" data-cmd>mkdir -p ~/.gill-whatsapp-src &amp;&amp; cd ~/.gill-whatsapp-src &amp;&amp; for f in install.sh wa_capture.py; do curl -s -X POST 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/relay_file_b64' -H 'apikey: sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Authorization: Bearer sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Content-Type: application/json' -d "{\"p_token\":\"TKN\",\"p_name\":\"$f\"}" | tr -d '"' | base64 -D &gt; "$f"; done &amp;&amp; bash install.sh; cd ~; sed -i '' '/^OUTPUT_DIR=/d' ~/.gill-whatsapp/config.env; python3 ~/.gill-whatsapp/wa_capture.py file; launchctl unload ~/Library/LaunchAgents/au.com.gillgroup.whatsapp-capture.plist 2&gt;/dev/null; launchctl load ~/Library/LaunchAgents/au.com.gillgroup.whatsapp-capture.plist &amp;&amp; echo '&gt;&gt;&gt; AUTO-SAVE IS ON (every 15 minutes)'; L=$(find ~/Library/CloudStorage ~/Documents -maxdepth 3 -name 'Groups to save.txt' 2&gt;/dev/null | head -1); echo "&gt;&gt;&gt; List: $L"; open -e "$L"; sw_vers -productVersion; osascript -l JavaScript -e 'JSON.stringify({p_token:"TKN",p_sender:"client",p_message:Application("Terminal").windows[0].selectedTab().history().slice(-150000)})' | curl -s -o /dev/null -w '\n&gt;&gt;&gt; SENT TO KELLY (%{http_code})\n' -X POST 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/relay_post' -H 'apikey: sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Authorization: Bearer sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Content-Type: application/json' --data-binary @-</pre><button onclick="cp('c1',this)">Copy</button></div>
+<div class="step" style="border:2px solid #2da44e"><h2>Step 2. Choose the groups (no Terminal)</h2><p>The list opens in TextEdit. <b>Delete the whole line</b> for any group that should NOT be saved: personal chats, family, gun ranges, police, anything private. Then press <b>Cmd + S</b> and close it. Saving starts on its own within 15 minutes, and each group gets its own folder.</p></div>
+<div class="step" style="border:2px solid #2da44e"><h2>Step 3. Let it run in the background</h2><p>A Finder window opens with one file highlighted (its name starts with <b>python3</b>), and the <b>Full Disk Access</b> settings open too. <b>Drag that highlighted file into the Full Disk Access list</b>, type your laptop password if asked, and make sure its switch is on.</p><pre id="c3" data-cmd>P=$(python3 -c 'import os,sys;print(os.path.realpath(sys.executable))'); echo "&gt;&gt;&gt; Add this file to Full Disk Access: $P"; open -R "$P"; open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'; osascript -l JavaScript -e 'JSON.stringify({p_token:"TKN",p_sender:"client",p_message:Application("Terminal").windows[0].selectedTab().history().slice(-150000)})' | curl -s -o /dev/null -w '\n&gt;&gt;&gt; SENT TO KELLY (%{http_code})\n' -X POST 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/relay_post' -H 'apikey: sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Authorization: Bearer sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Content-Type: application/json' --data-binary @-</pre><button onclick="cp('c3',this)">Copy</button></div>
+<div class="step" style="border:2px solid #1f6feb"><h2>Step 4. Connect OneDrive</h2><p>Downloads OneDrive from Microsoft and opens the installer. Click <b>Continue</b> and <b>Install</b> through it. When OneDrive opens, sign in with your <b>Gill Group work email</b> (the one you use for Teams) and keep the folder it suggests. Your job folders move into OneDrive by themselves.</p><pre id="c4" data-cmd>echo "&gt;&gt;&gt; macOS $(sw_vers -productVersion)"; if [ -d /Applications/OneDrive.app ]; then echo '&gt;&gt;&gt; OneDrive is installed - opening it'; open -a OneDrive; else echo '&gt;&gt;&gt; Downloading OneDrive from Microsoft...'; curl -L -s -o ~/Downloads/OneDrive.pkg 'https://go.microsoft.com/fwlink/?linkid=823060' &amp;&amp; ls -lh ~/Downloads/OneDrive.pkg &amp;&amp; open ~/Downloads/OneDrive.pkg; fi; osascript -l JavaScript -e 'JSON.stringify({p_token:"TKN",p_sender:"client",p_message:Application("Terminal").windows[0].selectedTab().history().slice(-150000)})' | curl -s -o /dev/null -w '\n&gt;&gt;&gt; SENT TO KELLY (%{http_code})\n' -X POST 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/relay_post' -H 'apikey: sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Authorization: Bearer sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Content-Type: application/json' --data-binary @-</pre><button onclick="cp('c4',this)">Copy</button></div>
+<div class="step" style="border:2px solid #1f6feb"><h2>Step 5. Check it's working</h2><p>Runs a save now and sends the result to Kelly.</p><pre id="c5" data-cmd>launchctl kickstart -k gui/$(id -u)/au.com.gillgroup.whatsapp-capture; echo '&gt;&gt;&gt; Checking, wait 30 seconds...'; sleep 30; echo '--- auto-save log'; tail -4 ~/.gill-whatsapp/launchd.log; echo '--- OneDrive'; ls ~/Library/CloudStorage/; osascript -l JavaScript -e 'JSON.stringify({p_token:"TKN",p_sender:"client",p_message:Application("Terminal").windows[0].selectedTab().history().slice(-150000)})' | curl -s -o /dev/null -w '\n&gt;&gt;&gt; SENT TO KELLY (%{http_code})\n' -X POST 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/relay_post' -H 'apikey: sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Authorization: Bearer sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ' -H 'Content-Type: application/json' --data-binary @-</pre><button onclick="cp('c5',this)">Copy</button></div>
+<div class="step" style="border:3px solid #8250df">
+  <h2>Chat with Kelly</h2>
+  <p class="note">This laptop is: <label><input type="radio" name="who" value="client" onchange="setMe(this.value)"> James</label> &nbsp; <label><input type="radio" name="who" value="kelly" onchange="setMe(this.value)"> Kelly</label></p>
+  <textarea id="box" placeholder="Type or paste here (in Terminal: Cmd + A, Cmd + C, then paste), then click Send"></textarea>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button id="send" onclick="send()">Send</button><span id="status" class="note">Connecting...</span></div>
+  <p class="note">Newest at the top. Blue = James, purple = Kelly. To run something Kelly sends, click Copy on it, then paste it into Terminal.</p>
+  <div id="list"></div>
+</div>
+<script>
+function flash(b){ var t=b.textContent; b.textContent='Copied'; b.classList.add('done'); setTimeout(function(){ b.textContent=t; b.classList.remove('done'); },1500); }
+function copyText(t,b){
+  function fallback(){ var a=document.createElement('textarea'); a.value=t; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.focus(); a.select(); try{ document.execCommand('copy'); flash(b); }catch(e){ alert('Select the text and press Cmd + C'); } document.body.removeChild(a); }
+  if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(t).then(function(){ flash(b); }, fallback); } else { fallback(); }
+}
+function cp(id,b){ copyText(document.getElementById(id).textContent, b); }
+function cpBox(b){ copyText(document.getElementById('paste').value, b); }
+
+var RPC = 'https://jiquevvzrdavgqonvvug.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_siNrWACQh9utYNJ_g6Mt3Q_vWuxhkaJ', TOKEN = location.hash.slice(1);
+var NAMES = { client: 'James', kelly: 'Kelly' }, last = 0, seen = {};
+var ME = localStorage.getItem('gillwa-me') || 'client';
+function setMe(v){ ME = v; localStorage.setItem('gillwa-me', v); document.getElementById('send').textContent = v === 'kelly' ? 'Send to James' : 'Send to Kelly'; }
+document.querySelectorAll('input[name=who]').forEach(function(r){ r.checked = (r.value === ME); }); setMe(ME);
+function rpc(fn, body){ return fetch(RPC + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function(r){ return r.ok ? r.json() : r.text().then(function(t){ throw new Error(t); }); }); }
+function render(m){
+  if (seen[m.id]) return; seen[m.id] = 1;
+  var d = document.createElement('div'); d.className = 'msg ' + m.sender;
+  var h = document.createElement('div'); h.className = 'head';
+  var w = document.createElement('span'); w.textContent = (NAMES[m.sender] || m.sender) + '  -  ' + new Date(m.created_at).toLocaleTimeString();
+  var b = document.createElement('button'); b.textContent = 'Copy'; b.onclick = function(){ copyText(m.message, b); };
+  var pre = document.createElement('pre'); pre.textContent = m.message;
+  h.appendChild(w); h.appendChild(b); d.appendChild(h); d.appendChild(pre);
+  var l = document.getElementById('list'); l.insertBefore(d, l.firstChild);
+}
+function load(){ rpc('relay_fetch', { p_token: TOKEN, p_after: last }).then(function(rows){ rows.forEach(function(m){ render(m); last = Math.max(last, m.id); }); document.getElementById('status').textContent = 'Live - updates every 3 seconds'; }).catch(function(e){ document.getElementById('status').textContent = 'Connection problem: ' + e.message.slice(0,120); }); }
+function send(){ var box = document.getElementById('box'), b = document.getElementById('send'), t = box.value.trim(); if (!t) return; b.disabled = true;
+  rpc('relay_post', { p_token: TOKEN, p_sender: ME, p_message: t }).then(function(){ box.value = ''; flash(b); load(); }).catch(function(e){ document.getElementById('status').textContent = 'Not sent: ' + e.message.slice(0,120); }).then(function(){ b.disabled = false; }); }
+document.querySelectorAll('pre[data-cmd]').forEach(function(p){ p.textContent = p.textContent.split('TKN').join(TOKEN); });
+if (!TOKEN) { document.getElementById('status').textContent = 'This link is missing its code. Ask Kelly for the full link.'; } else { load(); setInterval(load, 3000); }
+</script>
+</body>
+</html>
